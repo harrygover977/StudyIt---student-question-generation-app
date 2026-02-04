@@ -31,6 +31,13 @@ def app_routes(app):
     def index():
         return render_template("index.html")
     
+    @app.route("/upload", methods=["POST", "GET"])
+    def upload():
+        if request.method == "POST":
+            file = request.files.get("notes")
+            print(file)
+        return redirect(url_for("index"))
+    
     @app.route("/signup", methods=["POST", "GET"])
     def signup():
         if request.method == "POST":
