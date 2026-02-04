@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from flask_login import LoginManager, login_user
+from flask_login import LoginManager, login_user, logout_user, login_required
 from models import db, User
 from dotenv import load_dotenv
 import os
@@ -19,14 +19,15 @@ login_manager.login_message = "Please sign up to access this page"
 login_manager.login_message_category = "error"
 
 def app_routes(app):
-    @login_manager.request_loader
+    @login_manager.user_loader
     def load_user(user_id):
         try:
             return User.query.get(int(user_id))
         except (TypeError, ValueError):
             return None
-        
+    
     @app.route("/")
+    @login_required
     def index():
         return render_template("index.html")
     
@@ -71,9 +72,16 @@ def app_routes(app):
                 return redirect(url_for("signup"))
             
             login_user(user)
+            print(user.is_authenticated)
             return redirect(url_for("index"))
         
         return render_template("login.html")
+    
+    @app.route("/logout", methods=["POST"])
+    @login_required
+    def logout():
+        logout_user()
+        return redirect(url_for("login"))
     
 app_routes(app)
 db.init_app(app)
